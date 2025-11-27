@@ -47,6 +47,10 @@ You should not modify the existing PART_1_PIPELINE.
 
 You may either delete the parts of the code that save the output file, or change these to a different output file like part1-answers-temp.txt.
 """
+import part1, part2
+import matplotlib.pyplot as plt, time
+
+NUM_RUNS = 1
 
 def PART_1_PIPELINE_PARAMETRIC(N, P):
     """
@@ -115,6 +119,121 @@ That is why we are assuming the latency will just be the running time of the ent
 """
 
 # Copy in ThroughputHelper and LatencyHelper
+class ThroughputHelper:
+    def __init__(self):
+        # Initialize the object.
+        # Pipelines: a list of functions, where each function
+        # can be run on no arguments.
+        # (like: def f(): ... )
+        self.pipelines = []
+
+        # Pipeline names
+        # A list of names for each pipeline
+        self.names = []
+
+        # Pipeline input sizes
+        self.sizes = []
+
+        # Pipeline throughputs
+        # This is set to None, but will be set to a list after throughputs
+        # are calculated.
+        self.throughputs = None
+
+    def add_pipeline(self, name, size, func):
+        self.names.append(name)
+        self.sizes.append(size)
+        self.pipelines.append(func)
+
+    def compare_throughput(self):
+        # Measure the throughput of all pipelines
+        # and store it in a list in self.throughputs.
+        # Make sure to use the NUM_RUNS variable.
+        # Also, return the resulting list of throughputs,
+        # in **number of items per second.**
+        self.throughputs = []
+        for i, func in enumerate(self.pipelines):
+            start_time = time.time()
+            for n in range(NUM_RUNS):
+                func()
+            end_time = time.time()
+            total_time = end_time - start_time
+            total_items = self.sizes[i] * NUM_RUNS
+            throughput = (total_items/total_time) if total_time > 0 else 0
+            self.throughputs.append(throughput)
+        return self.throughputs
+
+    def generate_plot(self, filename):
+        # Generate a plot for throughput using matplotlib.
+        # You can use any plot you like, but a bar chart probably makes
+        # the most sense.
+        # Make sure you include a legend.
+        # Save the result in the filename provided.
+        throughputs = self.compare_throughput()
+
+        plt.figure(figsize=(6, 6))
+        bars = plt.bar(self.names, throughputs)
+        plt.title('Pipeline Throughput Comparison')
+        plt.xlabel('Pipeline')
+        plt.ylabel('Throughput (items/sec)')
+        plt.legend(bars, self.names, title='Pipelines')
+
+        plt.savefig(filename)
+        plt.show()
+
+class LatencyHelper:
+    def __init__(self):
+        # Initialize the object.
+        # Pipelines: a list of functions, where each function
+        # can be run on no arguments.
+        # (like: def f(): ... )
+        self.pipelines = []
+
+        # Pipeline names
+        # A list of names for each pipeline
+        self.names = []
+
+        # Pipeline latencies
+        # This is set to None, but will be set to a list after latencies
+        # are calculated.
+        self.latencies = None
+
+    def add_pipeline(self, name, func):
+        self.names.append(name)
+        self.pipelines.append(func)
+
+    def compare_latency(self):
+        # Measure the latency of all pipelines
+        # and store it in a list in self.latencies.
+        # Also, return the resulting list of latencies,
+        # in **milliseconds.**
+        self.latencies = []
+        for func in self.pipelines:
+            start_time = time.time()
+            for n in range(NUM_RUNS):
+                func()
+            end_time = time.time()
+            total_time = (end_time - start_time) * 1000 # in milliseconds
+            avg_latency = total_time / NUM_RUNS
+            self.latencies.append(avg_latency)
+        return self.latencies
+
+    def generate_plot(self, filename):
+        # Generate a plot for latency using matplotlib.
+        # You can use any plot you like, but a bar chart probably makes
+        # the most sense.
+        # Make sure you include a legend.
+        # Save the result in the filename provided.
+        latencies = self.compare_latency()
+
+        plt.figure(figsize=(6, 6))
+        plt.bar(self.names, latencies, color=['red', 'blue', 'green'])
+        bars = plt.bar(self.names, latencies)
+        plt.title('Pipeline Latency Comparison')
+        plt.xlabel('Pipeline')
+        plt.ylabel('Latency (ms/run)')
+        plt.legend(bars, self.names, title='Pipelines')
+        plt.savefig(filename)
+        plt.show()
 
 # Insert code to generate plots here as needed
 
